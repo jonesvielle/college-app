@@ -1,0 +1,39 @@
+create shareable links --- deployment process
+make levels dynamic
+add fonts--before deployment
+
+https://www.omnicalculator.com/finance/pre-and-post-money-valuation
+
+
+https://exploreembedded.com/wiki/Setting_up_GPRS_with_SIM800L#Test_AT_commands
+
+https://how2electronics.com/send-gsm-sim800-900-gprs-data-thingspeak-arduino/
+
+https://rethinkdb.com/api/python/
+
+https://paystack.com/docs/transfers/single-transfers/#verify-the-account-number
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+activate actived chip
+resend code
+reset password
+assign password
+ip logger
