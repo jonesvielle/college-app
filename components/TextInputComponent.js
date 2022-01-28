@@ -14,6 +14,7 @@ import {
   brandColor,
   studentLoginAs,
   tutorLoginAs,
+  dimension,
 } from './modules';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import TutorActiveImage from '../images/tutorActive.png';
@@ -165,13 +166,21 @@ const TextInputComponent = ({
           keyboardType={isNumeric ? 'numeric' : 'default'}
           onChangeText={onChange}
           placeholder={placeHolder}
-          style={{backgroundColor: 'white', flex: 10}}
+          style={{
+            backgroundColor: 'white',
+            flex: 10,
+            color: 'grey',
+            fontSize: dimension.fontScale * 20,
+            textAlign: 'justify',
+            // textAlign: 'center',
+          }}
           onFocus={onFocus}
           secureTextEntry={secureTextEntry}
           maxLength={maxLength}
           numberOfLines={lines}
           multiline={multiline}
           value={value}
+          // onChange
         />
         {showDelete ? (
           <TouchableOpacity

@@ -53,6 +53,7 @@ import PickerComponent from './pickerComponent';
 import BackButtonComponent from './backButtonComponent';
 import Bank from '../images/bank.png';
 import ButtonComponent from './buttonComponent';
+import FocusAwareStatusBar from './FocuseAwareStatusBar';
 
 RNPaystack.init({
   publicKey: 'pk_live_5695b4545f2c18e250b7ed5721839a289740b0ff',
@@ -83,17 +84,43 @@ const StudentPaymentScreen = ({route, navigation}) => {
   const [updateStates, setUpdateStates] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [reference, setReference] = useState('');
-  const [cardNumberDisplay, setCardNumberDisplay] = useState('1234567890');
+  const [cardNumberDisplay, setCardNumberDisplay] = useState(null);
 
   const groupStrings = (value) => {
+    // let value = String(value);
     // console.log(value);
-    const formatted = [];
-    for (let i = 0; i < value.length; i++) {
-      console.log(value[i]);
+    if (value !== null) {
+      const formatted1 = new Array();
+      const formatted2 = new Array();
+      const formatted3 = new Array();
+      const formatted4 = new Array();
+      const interval = 4;
+      for (let i = 0; i < interval; i++) {
+        formatted1.push(value[i]);
+        // console.log(value[i]);
+      }
+      for (let i = interval; i < interval * 2; i++) {
+        formatted2.push(value[i]);
+      }
+      for (let i = interval * 2; i < interval * 3; i++) {
+        formatted3.push(value[i]);
+      }
+      for (let i = interval * 3; i < interval * 4; i++) {
+        formatted4.push(value[i]);
+      }
+      let group1 = +formatted1.join('');
+      let group2 = +formatted2.join('');
+      let group3 = +formatted3.join('');
+      let group4 = +formatted4.join('');
+      console.log(Number(formatted1 + '  ' + formatted2));
+      // return group1 + '  ' + group2 + '  ' + group3 + '  ' + group4;
+      setCardNumberDisplay(
+        group1 + '  ' + group2 + '  ' + group3 + '  ' + group4,
+      );
     }
   };
 
-  groupStrings(cardNumberDisplay);
+  // groupStrings(cardNumberDisplay);
 
   const initializeTransaction = () => {
     var data = JSON.stringify({
@@ -134,6 +161,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
   //   };
   const handleCardNumber = (e) => {
     setCardNumber(e);
+    groupStrings(e);
   };
   const handleCardCvv = (e) => {
     setCardCvv(e);
@@ -272,6 +300,11 @@ const StudentPaymentScreen = ({route, navigation}) => {
   // for(let i in '12474906')
   return (
     <ScrollView style={{backgroundColor: 'white'}}>
+      <FocusAwareStatusBar
+        currentHeight={0}
+        translucent={false}
+        backgroundColor={brandColor}
+      />
       <View style={{padding: '5%', backgroundColor: 'white'}}>
         <View
           style={{
@@ -388,6 +421,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
         <View style={{padding: '0%', width: '100%', marginTop: '10%'}}>
           <Text style={{fontSize: dimension.fontScale * 13}}>Card Details</Text>
           <TextInputComponent
+            value={cardNumberDisplay}
             hideCursor={true}
             isNumeric={true}
             placeHolder="Enter card number"
