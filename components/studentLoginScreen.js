@@ -22,6 +22,7 @@ import {
   awsOptions,
   dimension,
   apiDomain,
+  errorHandler,
 } from './modules';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import {Picker} from '@react-native-picker/picker';
@@ -129,14 +130,15 @@ const StudentLoginScreen = ({route, navigation}) => {
       .catch(function (error) {
         console.log(error);
         setShowLoader(false);
+        errorHandler(error);
         // setContinueButtonDisabled(false);
-        if (error.response !== undefined) {
-          setNetworkError(false);
-          setIsWrongPassword(true);
-        } else {
-          setIsWrongPassword(false);
-          setNetworkError(true);
-        }
+        // if (error.response !== undefined) {
+        //   setNetworkError(false);
+        //   setIsWrongPassword(true);
+        // } else {
+        //   setIsWrongPassword(false);
+        //   setNetworkError(true);
+        // }
       });
   };
   const emailFocus = () => {

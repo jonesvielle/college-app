@@ -57,12 +57,14 @@ const TextInputComponent = ({
   deleteChip,
   chipIndex,
   hideCursor,
+  rounded,
 }) => {
   // const chipsData = ['m', 'ffg', 'ddjhhgh'];
   const [ste, setSte] = useState({});
   return (
     <View
       style={{
+        borderRadius: rounded ? 10 : 0,
         flexDirection: 'column',
         width: '100%',
         borderColor: activeState ? brandColor : 'rgb(114, 112, 112)',
@@ -172,6 +174,7 @@ const TextInputComponent = ({
             color: 'grey',
             fontSize: dimension.fontScale * 20,
             textAlign: 'justify',
+
             // textAlign: 'center',
           }}
           onFocus={onFocus}

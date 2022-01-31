@@ -85,42 +85,18 @@ const StudentPaymentScreen = ({route, navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [reference, setReference] = useState('');
   const [cardNumberDisplay, setCardNumberDisplay] = useState(null);
+  const [expiryDateFocus, setExpiryDateFocus] = useState(false);
+  const [expiryDateDispley, setExpiryDateDisplay] = useState(null);
+  const [ccvFocus, setCcvFocus] = useState(false);
 
-  const groupStrings = (value) => {
-    // let value = String(value);
-    // console.log(value);
-    if (value !== null) {
-      const formatted1 = new Array();
-      const formatted2 = new Array();
-      const formatted3 = new Array();
-      const formatted4 = new Array();
-      const interval = 4;
-      for (let i = 0; i < interval; i++) {
-        formatted1.push(value[i]);
-        // console.log(value[i]);
-      }
-      for (let i = interval; i < interval * 2; i++) {
-        formatted2.push(value[i]);
-      }
-      for (let i = interval * 2; i < interval * 3; i++) {
-        formatted3.push(value[i]);
-      }
-      for (let i = interval * 3; i < interval * 4; i++) {
-        formatted4.push(value[i]);
-      }
-      let group1 = +formatted1.join('');
-      let group2 = +formatted2.join('');
-      let group3 = +formatted3.join('');
-      let group4 = +formatted4.join('');
-      console.log(Number(formatted1 + '  ' + formatted2));
-      // return group1 + '  ' + group2 + '  ' + group3 + '  ' + group4;
-      setCardNumberDisplay(
-        group1 + '  ' + group2 + '  ' + group3 + '  ' + group4,
-      );
-    }
-  };
+  const expiryDateTextInputRef = useRef(null);
+  const ccvTextInputRef = useRef(null);
 
-  // groupStrings(cardNumberDisplay);
+  // const groupStrings = (e) => {
+  //   for (let i = 0; i < e.length; i++) {
+  //     cardNumberDisplay.push(e[i]);
+  //   }
+  // };
 
   const initializeTransaction = () => {
     var data = JSON.stringify({
@@ -160,14 +136,35 @@ const StudentPaymentScreen = ({route, navigation}) => {
   //     setBankName(e);
   //   };
   const handleCardNumber = (e) => {
-    setCardNumber(e);
-    groupStrings(e);
+    if (e.length < 23) {
+      setCardNumber(e);
+      let formattedText = e.split(' ').join('');
+      if (formattedText.length > 0) {
+        formattedText = formattedText
+          .match(new RegExp('.{1,4}', 'g'))
+          .join(' ');
+      }
+      setCardNumberDisplay(formattedText);
+      return formattedText;
+    } else {
+      expiryDateTextInputRef.current.focus();
+    }
   };
   const handleCardCvv = (e) => {
     setCardCvv(e);
   };
   const handleCardExpMonth = (e) => {
-    setCardExpMonth(e);
+    if (e.length < 6) {
+      setCardExpMonth(e);
+      setExpiryDateDisplay(
+        e.length === 3 && !e.includes('/')
+          ? `${e.substring(0, 2)}/${e.substring(2)}`
+          : e,
+      );
+      console.log(e);
+    } else {
+      ccvTextInputRef.current.focus();
+    }
   };
   const handleCardExpYear = (e) => {
     setCardExpYear(e);
@@ -337,6 +334,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
             padding: '5%',
             borderWidth: 1,
             borderColor: 'rgba(0,0,0,0.1)',
+            backgroundColor: '#FFF9F9',
           }}>
           <View style={{flexDirection: 'row'}}>
             <Ionicons
@@ -421,6 +419,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
         <View style={{padding: '0%', width: '100%', marginTop: '10%'}}>
           <Text style={{fontSize: dimension.fontScale * 13}}>Card Details</Text>
           <TextInputComponent
+            rounded={true}
             value={cardNumberDisplay}
             hideCursor={true}
             isNumeric={true}
@@ -428,30 +427,52 @@ const StudentPaymentScreen = ({route, navigation}) => {
             onChange={handleCardNumber}
           />
         </View>
-        <View style={{padding: '5%', flexDirection: 'row'}}>
-          <TextInput
-            onChangeText={handleCardCvv}
-            keyboardType="numeric"
-            placeholder="cvv"
-            style={{
-              width: '20%',
-              borderWidth: 0.5,
-              borderColor: 'grey',
-              padding: '2%',
-            }}
-          />
-          <TextInput
-            onChangeText={handleCardExpMonth}
-            keyboardType="numeric"
-            placeholder="Exp month"
-            style={{width: '30%', borderWidth: 0.5, borderColor: 'grey'}}
-          />
-          <TextInput
-            onChangeText={handleCardExpYear}
-            keyboardType="numeric"
-            placeholder="Exp year(e.g 2020)"
-            style={{width: '50%', borderWidth: 0.5, borderColor: 'grey'}}
-          />
+        <View
+          style={{
+            padding: '0%',
+            flexDirection: 'row',
+            marginVertical: '10%',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+          <View style={{width: '45%', backgroundColor: 'transparent'}}>
+            <Text style={{marginVertical: '5%'}}>Expiry Date</Text>
+            <View
+              style={{
+                borderWidth: 0.5,
+                padding: '2%',
+                width: '100%',
+                borderColor: 'grey',
+                borderRadius: 10,
+              }}>
+              <TextInput
+                ref={expiryDateTextInputRef}
+                onChangeText={handleCardExpMonth}
+                keyboardType="numeric"
+                placeholder="MM/YY"
+                value={expiryDateDispley}
+              />
+            </View>
+          </View>
+
+          <View style={{width: '45%', backgroundColor: 'transparent'}}>
+            <Text style={{marginVertical: '5%'}}>CCV</Text>
+            <View
+              style={{
+                width: '100%',
+                borderWidth: 0.5,
+                borderColor: 'grey',
+                padding: '2%',
+                borderRadius: 10,
+              }}>
+              <TextInput
+                onChangeText={handleCardCvv}
+                keyboardType="numeric"
+                placeholder="CCV"
+                ref={ccvTextInputRef}
+              />
+            </View>
+          </View>
 
           {/* <TextInput /> */}
         </View>
