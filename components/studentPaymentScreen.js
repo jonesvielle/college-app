@@ -76,6 +76,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
   //   const [bankName, setBankName] = useState('');
   const [accountName, setAccountName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
+  const [bankName, setBankName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [cardCvv, setCardCvv] = useState('');
   const [cardExpMonth, setCardExpMonth] = useState('');
@@ -88,6 +89,11 @@ const StudentPaymentScreen = ({route, navigation}) => {
   const [expiryDateFocus, setExpiryDateFocus] = useState(false);
   const [expiryDateDispley, setExpiryDateDisplay] = useState(null);
   const [ccvFocus, setCcvFocus] = useState(false);
+  const [activatePayWithCard, setActivatePayWithCard] = useState(true);
+  const [activatePayWithTransfer, setActivatePayWithTransfer] = useState(false);
+  const [bankList, setBankList] = useState([]);
+  const [rawBankData, setRawBankData] = useState([]);
+  const [selectedBankObject, setSelectedBankObject] = useState([]);
 
   const expiryDateTextInputRef = useRef(null);
   const ccvTextInputRef = useRef(null);
@@ -97,6 +103,47 @@ const StudentPaymentScreen = ({route, navigation}) => {
   //     cardNumberDisplay.push(e[i]);
   //   }
   // };
+
+  useEffect(() => {
+    fetchBanks();
+  }, []);
+
+  const fetchBanks = () => {
+    var config = {
+      method: 'get',
+      url: 'https://api.paystack.co/bank',
+      headers: {
+        Authorization: 'Bearer ' + process.env.PAYSTACK_SECRET,
+        Cookie:
+          'sails.sid=s%3AvabYwpLzjeBUBD1pvYuvwMrhxCBkOvoK.hOeNvTC29Uo0irehDpMjNmAx5m8WtiD6ITz%2BmQirR2E',
+      },
+    };
+
+    Axios(config)
+      .then(function (response) {
+        // console.log(JSON.stringify(response.data));
+        setRawBankData(response.data.data);
+        let temp = new Array();
+        for (i in response.data.data) {
+          temp.push(response.data.data[i].name);
+        }
+        // console.log(temp);
+        setBankList(temp);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+
+  const handlePayWithCard = () => {
+    setActivatePayWithCard(true);
+    setActivatePayWithTransfer(false);
+  };
+
+  const handlePayWithTransfer = () => {
+    setActivatePayWithCard(false);
+    setActivatePayWithTransfer(true);
+  };
 
   const initializeTransaction = () => {
     var data = JSON.stringify({
@@ -136,23 +183,30 @@ const StudentPaymentScreen = ({route, navigation}) => {
   //     setBankName(e);
   //   };
   const handleCardNumber = (e) => {
-    if (e.length < 23) {
-      setCardNumber(e);
-      let formattedText = e.split(' ').join('');
-      if (formattedText.length > 0) {
-        formattedText = formattedText
-          .match(new RegExp('.{1,4}', 'g'))
-          .join(' ');
-      }
-      setCardNumberDisplay(formattedText);
-      return formattedText;
-    } else {
+    console.log(e.length, e);
+    // console.log(e.length);
+    let formattedText = e.split(' ').join('');
+    if (formattedText.length > 0) {
+      formattedText = formattedText.match(new RegExp('.{1,4}', 'g')).join(' ');
+    }
+    setCardNumberDisplay(formattedText);
+    if (e.length > 19) {
       expiryDateTextInputRef.current.focus();
     }
+    let tempString = new Array();
+    for (i in e) {
+      // console.log(e[i]);
+      if (e[i] !== ' ') {
+        tempString.push(e[i]);
+      }
+    }
+    console.log('temp string', tempString);
   };
   const handleCardCvv = (e) => {
+    console.log('cvv', e);
     setCardCvv(e);
   };
+
   const handleCardExpMonth = (e) => {
     if (e.length < 6) {
       setCardExpMonth(e);
@@ -176,6 +230,20 @@ const StudentPaymentScreen = ({route, navigation}) => {
 
   const handleAccountNumber = (e) => {
     setAccountNumber(e);
+  };
+
+  const handleBankName = (e) => {
+    setBankName(e);
+    // let temp = new Array();
+    // console.log(rawBankData.includes(e));
+    let bf = new Array();
+    for (i in rawBankData) {
+      if (rawBankData[i].name === e) {
+        bf.push(rawBankData[i]);
+      }
+    }
+    // console.log('bf', bf);
+    setSelectedBankObject(bf);
   };
 
   const handlePayNowButton = () => {
@@ -324,7 +392,9 @@ const StudentPaymentScreen = ({route, navigation}) => {
           </Text>
         </View>
 
-        <View
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={handlePayWithCard}
           style={{
             width: '100%',
             flexDirection: 'row',
@@ -334,12 +404,12 @@ const StudentPaymentScreen = ({route, navigation}) => {
             padding: '5%',
             borderWidth: 1,
             borderColor: 'rgba(0,0,0,0.1)',
-            backgroundColor: '#FFF9F9',
+            backgroundColor: activatePayWithCard ? '#FFF9F9' : 'transparent',
           }}>
           <View style={{flexDirection: 'row'}}>
             <Ionicons
               //   onPress={handleVideoPause}
-              name={'ellipse'}
+              name={activatePayWithCard ? 'ellipse' : 'ellipse-outline'}
               size={20}
               color={brandColor}
               style={{marginRight: '5%'}}
@@ -362,9 +432,11 @@ const StudentPaymentScreen = ({route, navigation}) => {
               style={{marginRight: '5%'}}
             />
           </View>
-        </View>
+        </TouchableOpacity>
 
-        <View
+        <TouchableOpacity
+          onPress={handlePayWithTransfer}
+          activeOpacity={0.9}
           style={{
             width: '100%',
             flexDirection: 'row',
@@ -374,11 +446,14 @@ const StudentPaymentScreen = ({route, navigation}) => {
             padding: '5%',
             borderWidth: 1,
             borderColor: 'rgba(0,0,0,0.1)',
+            backgroundColor: activatePayWithTransfer
+              ? '#FFF9F9'
+              : 'transparent',
           }}>
           <View style={{flexDirection: 'row', width: '85%'}}>
             <Ionicons
               //   onPress={handleVideoPause}
-              name={'ellipse-outline'}
+              name={activatePayWithTransfer ? 'ellipse' : 'ellipse-outline'}
               size={20}
               color={brandColor}
               style={{marginRight: '5%'}}
@@ -398,7 +473,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
               style={{width: width * 0.08, height: width * 0.08}}
             />
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* <View style={{padding: '5%'}}>
           <Text style={{fontSize: dimension.fontScale * 13}}>Account name</Text>
@@ -416,66 +491,139 @@ const StudentPaymentScreen = ({route, navigation}) => {
             onChange={handleAccountNumber}
           />
         </View> */}
-        <View style={{padding: '0%', width: '100%', marginTop: '10%'}}>
-          <Text style={{fontSize: dimension.fontScale * 13}}>Card Details</Text>
-          <TextInputComponent
-            rounded={true}
-            value={cardNumberDisplay}
-            hideCursor={true}
-            isNumeric={true}
-            placeHolder="Enter card number"
-            onChange={handleCardNumber}
-          />
-        </View>
-        <View
-          style={{
-            padding: '0%',
-            flexDirection: 'row',
-            marginVertical: '10%',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}>
-          <View style={{width: '45%', backgroundColor: 'transparent'}}>
-            <Text style={{marginVertical: '5%'}}>Expiry Date</Text>
-            <View
-              style={{
-                borderWidth: 0.5,
-                padding: '2%',
-                width: '100%',
-                borderColor: 'grey',
-                borderRadius: 10,
-              }}>
-              <TextInput
-                ref={expiryDateTextInputRef}
-                onChangeText={handleCardExpMonth}
-                keyboardType="numeric"
-                placeholder="MM/YY"
-                value={expiryDateDispley}
+
+        {activatePayWithCard ? (
+          <>
+            <View style={{padding: '0%', width: '100%', marginTop: '10%'}}>
+              <Text style={{fontSize: dimension.fontScale * 13}}>
+                Card Number
+              </Text>
+              <TextInputComponent
+                rounded={true}
+                value={cardNumberDisplay}
+                hideCursor={true}
+                isNumeric={true}
+                placeHolder="0000-0000-0000-0000"
+                onChange={handleCardNumber}
+                maxLength={19}
               />
             </View>
-          </View>
-
-          <View style={{width: '45%', backgroundColor: 'transparent'}}>
-            <Text style={{marginVertical: '5%'}}>CCV</Text>
             <View
               style={{
-                width: '100%',
-                borderWidth: 0.5,
-                borderColor: 'grey',
-                padding: '2%',
-                borderRadius: 10,
+                padding: '0%',
+                flexDirection: 'row',
+                marginVertical: '10%',
+                alignItems: 'center',
+                justifyContent: 'space-between',
               }}>
-              <TextInput
-                onChangeText={handleCardCvv}
-                keyboardType="numeric"
-                placeholder="CCV"
-                ref={ccvTextInputRef}
+              <View style={{width: '45%', backgroundColor: 'transparent'}}>
+                <Text style={{marginVertical: '5%'}}>Expiry Date</Text>
+                <View
+                  style={{
+                    borderWidth: 0.5,
+                    padding: '2%',
+                    width: '100%',
+                    borderColor: 'grey',
+                    borderRadius: 10,
+                  }}>
+                  <TextInput
+                    ref={expiryDateTextInputRef}
+                    onChangeText={handleCardExpMonth}
+                    keyboardType="numeric"
+                    placeholder="MM/YY"
+                    value={expiryDateDispley}
+                  />
+                </View>
+              </View>
+
+              <View style={{width: '45%', backgroundColor: 'transparent'}}>
+                <Text style={{marginVertical: '5%'}}>CCV</Text>
+                <View
+                  style={{
+                    width: '100%',
+                    borderWidth: 0.5,
+                    borderColor: 'grey',
+                    padding: '2%',
+                    borderRadius: 10,
+                  }}>
+                  <TextInput
+                    onChangeText={handleCardCvv}
+                    keyboardType="numeric"
+                    placeholder="CCV"
+                    ref={ccvTextInputRef}
+                    maxLength={3}
+                  />
+                </View>
+              </View>
+
+              {/* <TextInput /> */}
+            </View>
+          </>
+        ) : (
+          <>
+            <View style={{padding: '0%', width: '100%', marginTop: '10%'}}>
+              <Text style={{fontSize: dimension.fontScale * 13}}>
+                Account Name
+              </Text>
+              <TextInputComponent
+                rounded={true}
+                hideCursor={true}
+                placeHolder="Enter account name"
+                onChange={handleAccountName}
               />
             </View>
-          </View>
+            <View
+              style={{
+                padding: '0%',
+                flexDirection: 'row',
+                marginVertical: '10%',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <View style={{width: '45%', backgroundColor: 'transparent'}}>
+                <Text style={{marginVertical: '5%'}}>Bank</Text>
+                <View
+                  style={{
+                    padding: '2%',
+                    width: '100%',
+                    borderColor: 'grey',
+                  }}>
+                  <PickerComponent
+                    rounded={true}
+                    itemList={bankList}
+                    selectedValue={bankName}
+                    pickerFunction={handleBankName}
+                    placeholder={'Select'}
+                  />
+                </View>
+              </View>
 
-          {/* <TextInput /> */}
-        </View>
+              <View style={{width: '45%', backgroundColor: 'transparent'}}>
+                <Text style={{marginVertical: '5%'}}>Account Number</Text>
+                <View
+                  style={{
+                    width: '100%',
+                    borderWidth: 0.5,
+                    borderColor: 'grey',
+                    padding: '2%',
+                    borderRadius: 10,
+                  }}>
+                  <TextInput
+                    onChangeText={handleCardCvv}
+                    keyboardType="numeric"
+                    placeholder="CCV"
+                    ref={ccvTextInputRef}
+                    maxLength={10}
+                    keyboardType={'numeric'}
+                  />
+                </View>
+              </View>
+
+              {/* <TextInput /> */}
+            </View>
+          </>
+        )}
+
         {/* <View style={{padding: '5%', width: '100%'}}>
           <Text style={{fontSize: dimension.fontScale * 13}}>Bank</Text>
           <PickerComponent selectedValue={bankName} pickerFunction={handleBankName} itemList={} placeholder="Select Bank"/>

@@ -28,6 +28,7 @@ const PickerComponent = ({
   pickerFunction,
   itemList,
   placeholder,
+  rounded,
 }) => {
   // conso
   return (
@@ -36,6 +37,8 @@ const PickerComponent = ({
         // marginTop: '5%',
         width: '100%',
         borderWidth: deviceSize * 0.0000025,
+        borderRadius: rounded ? 10 : 0,
+        borderColor: rounded ? 'grey' : 'black',
       }}>
       <Picker
         selectedValue={selectedValue}
