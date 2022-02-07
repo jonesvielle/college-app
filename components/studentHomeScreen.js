@@ -837,9 +837,6 @@ const StudentHomeScreen = ({
                   horizontal={true}
                   showsHorizontalScrollIndicator={false}
                   onEndReachedThreshold={width * 20}
-                  onEndReached={() => {
-                    console.warn('end reached');
-                  }}
                 />
               </View>
             )}
@@ -909,9 +906,6 @@ const StudentHomeScreen = ({
                       horizontal={true}
                       showsHorizontalScrollIndicator={false}
                       onEndReachedThreshold={width * 20}
-                      onEndReached={() => {
-                        console.warn('end reached');
-                      }}
                     />
                   </View>
                 )}

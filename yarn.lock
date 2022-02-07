@@ -3713,6 +3713,11 @@
     "dom-serializer" "0"
     "domelementtype" "1"
 
+"dotenv@^10.0.0":
+  "integrity" "sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q=="
+  "resolved" "https://registry.npmjs.org/dotenv/-/dotenv-10.0.0.tgz"
+  "version" "10.0.0"
+
 "ee-first@1.1.1":
   "integrity" "sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0="
   "resolved" "https://registry.npmjs.org/ee-first/-/ee-first-1.1.1.tgz"
@@ -7723,6 +7728,13 @@
   "resolved" "https://registry.npmjs.org/react-native-document-picker/-/react-native-document-picker-5.2.0.tgz"
   "version" "5.2.0"
 
+"react-native-dotenv@^3.3.1":
+  "integrity" "sha512-gAKXout1XCwCqJ3QPGoQAF2eRzOHgOnwg3x19z+ssow8bDIksJeKBqvoHDyGziVilAIP1J0bEC9Jf+VF8nFang=="
+  "resolved" "https://registry.npmjs.org/react-native-dotenv/-/react-native-dotenv-3.3.1.tgz"
+  "version" "3.3.1"
+  dependencies:
+    "dotenv" "^10.0.0"
+
 "react-native-fetch-blob@^0.10.8":
   "integrity" "sha1-T8JWq64MtfEOfEHyjBGz/zMNcqk="
   "resolved" "https://registry.npmjs.org/react-native-fetch-blob/-/react-native-fetch-blob-0.10.8.tgz"
@@ -7746,6 +7758,11 @@
   "integrity" "sha512-b0i6RX3CHMnUombWZh0+dmi5p9wzHp27QrgHIOA7jnAcdvai9j3IdltKx7u2+3iClwTgQPy+XhRQTSaO4q7xVA=="
   "resolved" "https://registry.npmjs.org/react-native-head-tab-view/-/react-native-head-tab-view-2.0.1.tgz"
   "version" "2.0.1"
+
+"react-native-immediate-phone-call@^2.0.0":
+  "integrity" "sha512-ImE+KfiuuVS+A6BZ2jkVkJsXzvOpREh/YubdhgJ7CYdbMLbieBG56K28B+M3evMaMFzs9reGFmQpDTMTIJBjaQ=="
+  "resolved" "https://registry.npmjs.org/react-native-immediate-phone-call/-/react-native-immediate-phone-call-2.0.0.tgz"
+  "version" "2.0.0"
 
 "react-native-ionicons@^4.6.5":
   "integrity" "sha512-s2Ia7M5t609LE9LWygMj3ALVPUlKhK7R9XcMb67fP4EYJv0oLcwg5pc+8ftv9XXaUuTW/WgL3zJlBYxAvtvMJg=="
@@ -7808,6 +7825,11 @@
     "@react-native-community/progress-view" "^1.0.3"
     "crypto-js" "^3.2.0"
     "prop-types" "^15.7.2"
+
+"react-native-phone-call@^1.0.9":
+  "integrity" "sha512-OPWYg8qeWNG/U4bWGMAKcQTH/ifqJnsvUPCH4lOkvWFHbQS3fbH5M8rFhXCzcfS0GVNzHhZX9ZByMM368TFAUQ=="
+  "resolved" "https://registry.npmjs.org/react-native-phone-call/-/react-native-phone-call-1.0.9.tgz"
+  "version" "1.0.9"
 
 "react-native-progress-circle@^2.1.0":
   "integrity" "sha512-VP0s92bgbTMQy4hQzPU4LlGyFj3z5u7i1HYFG8/yzXXfGkX1cxKS4xOlE+OTaObWC99w7Bodi3h8R7En2nQPYw=="

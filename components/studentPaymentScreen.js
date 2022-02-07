@@ -3,51 +3,24 @@ import {
   View,
   Text,
   TouchableOpacity,
-  FlatList,
   Image,
-  ActivityIndicator,
-  useWindowDimensions,
-  StyleSheet,
+  Linking,
+  ToastAndroid,
   // ScrollView,
 } from 'react-native';
-import TutorHeaderComponent from './tutorHeaderComponent';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Axios from 'axios';
 import {
-  deviceSize,
-  height,
   width,
   brandColor,
-  studentLoginAs,
-  tutorLoginAs,
-  checkInputLength,
-  checkUpperCase,
-  checkNumber,
-  awsOptions,
   dimension,
-  titleCase,
+  apiDomain,
+  makeid,
+  errorHandler,
 } from './modules';
-import Moment from 'moment';
-import Video from 'react-native-video';
-import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
-import {NavigationContainer} from '@react-navigation/native';
-import LectureDetailsOverviewScreen from './lectureDetailsOverviewScreen';
-import LectureDetailOutlineScreen from './LectureDetailsOutlineScreen';
 import {ScrollView, TextInput} from 'react-native-gesture-handler';
-import ScrollableTabView, {
-  // DefaultTabBar,
-  ScrollableTabBar,
-} from 'react-native-scrollable-tab-view-forked';
-import LecturesDetailsReviewScreen from './lecturesDetailsReviewScreen';
-import LectureDetailsQandAScreen from './lectureDetailsQandAscreen';
-import * as Progress from 'react-native-progress';
-import moment from 'moment';
-import Slider from '@react-native-community/slider';
 // import { Orientation } from 'react-native-pager-view';
-import Orientation from 'react-native-orientation-locker';
 import RNPaystack from 'react-native-paystack';
-import EmptySearch from '../images/search.png';
-import MasterCard from '../images/mastercard.png';
 import TextInputComponent from './TextInputComponent';
 import PickerComponent from './pickerComponent';
 import BackButtonComponent from './backButtonComponent';
@@ -88,12 +61,17 @@ const StudentPaymentScreen = ({route, navigation}) => {
   const [cardNumberDisplay, setCardNumberDisplay] = useState(null);
   const [expiryDateFocus, setExpiryDateFocus] = useState(false);
   const [expiryDateDispley, setExpiryDateDisplay] = useState(null);
+  const [expiryDate, setExpiryDate] = useState('');
   const [ccvFocus, setCcvFocus] = useState(false);
   const [activatePayWithCard, setActivatePayWithCard] = useState(true);
   const [activatePayWithTransfer, setActivatePayWithTransfer] = useState(false);
   const [bankList, setBankList] = useState([]);
   const [rawBankData, setRawBankData] = useState([]);
   const [selectedBankObject, setSelectedBankObject] = useState([]);
+  const [ussdCode, setUSSDCode] = useState('');
+  const [buttonDisabled, setButtonDisabled] = useState(true);
+  const [showUSSDCode, setShowUSSDCode] = useState(false);
+  const [transferUSSDCode, setTransferUSSDCode] = useState(true);
 
   const expiryDateTextInputRef = useRef(null);
   const ccvTextInputRef = useRef(null);
@@ -103,9 +81,15 @@ const StudentPaymentScreen = ({route, navigation}) => {
   //     cardNumberDisplay.push(e[i]);
   //   }
   // };
+  const supportedUSSDBanks = [
+    'Guaranty Trust Bank',
+    'United Bank of Africa',
+    'Sterling Bank',
+    'Zenith Bank',
+  ];
 
   useEffect(() => {
-    fetchBanks();
+    // fetchBanks();
   }, []);
 
   const fetchBanks = () => {
@@ -124,7 +108,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
         // console.log(JSON.stringify(response.data));
         setRawBankData(response.data.data);
         let temp = new Array();
-        for (i in response.data.data) {
+        for (let i in response.data.data) {
           temp.push(response.data.data[i].name);
         }
         // console.log(temp);
@@ -170,10 +154,10 @@ const StudentPaymentScreen = ({route, navigation}) => {
         chargeCard(response.data.data.access_code);
       })
       .catch(function (error) {
-        console.log(error.response.data.message);
-        alert(error.response.data.message);
-
+        console.log('came here', error.response.data.message);
+        // alert(error.response.data.message);
         setIsLoading(false);
+        errorHandler(error);
       });
   };
 
@@ -185,6 +169,11 @@ const StudentPaymentScreen = ({route, navigation}) => {
   const handleCardNumber = (e) => {
     console.log(e.length, e);
     // console.log(e.length);
+    if (e.length > 0 && expiryDate.length > 0 && cardCvv.length > 0) {
+      setButtonDisabled(false);
+    } else {
+      setButtonDisabled(true);
+    }
     let formattedText = e.split(' ').join('');
     if (formattedText.length > 0) {
       formattedText = formattedText.match(new RegExp('.{1,4}', 'g')).join(' ');
@@ -194,28 +183,40 @@ const StudentPaymentScreen = ({route, navigation}) => {
       expiryDateTextInputRef.current.focus();
     }
     let tempString = new Array();
-    for (i in e) {
+    for (let i in e) {
       // console.log(e[i]);
       if (e[i] !== ' ') {
         tempString.push(e[i]);
       }
     }
-    console.log('temp string', tempString);
+    let formattedString = tempString.join('');
+    setCardNumber(formattedString);
+    // console.log('temp string', d);
   };
   const handleCardCvv = (e) => {
+    if (e.length > 0 && expiryDate.length > 0 && cardNumber.length > 0) {
+      setButtonDisabled(false);
+    } else {
+      setButtonDisabled(true);
+    }
     console.log('cvv', e);
     setCardCvv(e);
   };
 
   const handleCardExpMonth = (e) => {
+    if (e.length > 0 && cardNumber.length > 0 && cardCvv.length > 0) {
+      setButtonDisabled(false);
+    } else {
+      setButtonDisabled(true);
+    }
     if (e.length < 6) {
-      setCardExpMonth(e);
       setExpiryDateDisplay(
         e.length === 3 && !e.includes('/')
           ? `${e.substring(0, 2)}/${e.substring(2)}`
           : e,
       );
       console.log(e);
+      setExpiryDate(e);
     } else {
       ccvTextInputRef.current.focus();
     }
@@ -236,30 +237,51 @@ const StudentPaymentScreen = ({route, navigation}) => {
     setBankName(e);
     // let temp = new Array();
     // console.log(rawBankData.includes(e));
-    let bf = new Array();
-    for (i in rawBankData) {
-      if (rawBankData[i].name === e) {
-        bf.push(rawBankData[i]);
-      }
-    }
+    // let bf = new Array();
+    // for (i in rawBankData) {
+    //   if (rawBankData[i].name === e) {
+    //     bf.push(rawBankData[i]);
+    //   }
+    // }
     // console.log('bf', bf);
-    setSelectedBankObject(bf);
+    // setSelectedBankObject(bf);
+    if (e === 'Guaranty Trust Bank') {
+      setUSSDCode('737');
+    }
+    if (e === 'United Bank of Africa') {
+      setUSSDCode('919');
+    }
+    if (e === 'Sterling Bank') {
+      setUSSDCode('822');
+    }
+    if (e === 'Zenith Bank') {
+      setUSSDCode('966');
+    }
+    if (activatePayWithTransfer === true && e.length > 0) {
+      setButtonDisabled(false);
+    } else {
+      setButtonDisabled(true);
+    }
   };
 
   const handlePayNowButton = () => {
+    // alert('ok');
     setIsLoading(true);
+    setButtonDisabled(true);
+    // alert('ok');
     // alert(cardNumber);
     if (
       //   accountName.length < 1 ||
       //   accountNumber < 1 ||
       cardNumber.length < 1 ||
       cardCvv.length < 1 ||
-      cardExpMonth.length < 1 ||
-      cardExpYear.length < 1
+      expiryDate.length < 1
     ) {
-      alert('fill all neccessary details!');
+      setButtonDisabled(false);
       setIsLoading(false);
     } else {
+      setButtonDisabled(true);
+      setIsLoading(true);
       //   alert('grd');
       initializeTransaction();
     }
@@ -268,8 +290,8 @@ const StudentPaymentScreen = ({route, navigation}) => {
   function chargeCard(access_code) {
     RNPaystack.chargeCardWithAccessCode({
       cardNumber: cardNumber,
-      expiryMonth: cardExpMonth,
-      expiryYear: cardExpYear,
+      expiryMonth: expiryDateDispley.substring(0, 2),
+      expiryYear: expiryDateDispley.substring(3),
       cvc: cardCvv,
       accessCode: access_code,
     })
@@ -286,9 +308,11 @@ const StudentPaymentScreen = ({route, navigation}) => {
       })
       .catch((error) => {
         //   console.log(error); // error is a javascript Error object
-        console.log(error.message);
-        alert(error.message);
+        console.log('charge card', error.message);
+        // alert(error.message);
         setIsLoading(false);
+        setButtonDisabled(false);
+        errorHandler({response: {data: {message: error.message}}});
         //   console.log(error.code);
       });
   }
@@ -304,7 +328,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
 
     var config = {
       method: 'post',
-      url: 'https://collageapi.herokuapp.com/api/subscribe_lecture/',
+      url: apiDomain + '/api/subscribe_lecture/',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -315,6 +339,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
       .then(function (response) {
         console.log(JSON.stringify(response.data));
         setIsLoading(false);
+        setButtonDisabled(false);
         // alert('OK');
         navigation.navigate('StudentLectureAccessScreen', {
           lectureId,
@@ -325,6 +350,9 @@ const StudentPaymentScreen = ({route, navigation}) => {
       })
       .catch(function (error) {
         console.log(error);
+        setButtonDisabled(false);
+        setIsLoading(false);
+        errorHandler(error);
       });
   };
   const addPastQuestionSubScriptions = (payment_reference) => {
@@ -350,6 +378,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
       .then(function (response) {
         console.log(JSON.stringify(response.data));
         setIsLoading(false);
+        setButtonDisabled(false);
         // alert('OK');
         navigation.navigate('StudentPastQuestionAccessScreen', {
           lecture_id: lectureId,
@@ -360,9 +389,65 @@ const StudentPaymentScreen = ({route, navigation}) => {
       })
       .catch(function (error) {
         console.log(error);
+        setButtonDisabled(false);
+        setIsLoading(false);
+        errorHandler(error);
       });
   };
   // for(let i in '12474906')
+
+  const handlePayWithUSSDCode = () => {
+    setIsLoading(true);
+    setButtonDisabled(true);
+    var data = JSON.stringify({
+      email: studentEmail,
+      amount: (amount * 100) / amount,
+      ussd: {
+        type: ussdCode,
+      },
+      metadata: {
+        token: authenticationToken,
+        tutor_id: tutorId,
+        lecture_id: lectureId,
+        payment_reference: makeid(30),
+        university: studentUniversity,
+        level: studentLevel,
+        payment_channel: 'USSD',
+        payment_type: role === 'pastQuestion' ? 'past_questions' : 'lectures',
+      },
+    });
+
+    var config = {
+      method: 'post',
+      url: 'https://api.paystack.co/charge',
+      headers: {
+        Authorization:
+          'Bearer ' + 'sk_live_c088456ae14839425ace6ad020beda6bbdcd44a5',
+        'Content-Type': 'application/json',
+        Cookie:
+          'sails.sid=s%3AjjiXi6mEscfV34eNle-2-vDy45JRudra.mcairEF%2FltYCwbd1q2iZMg%2BStDIFi7Gx9lIFJympkuw',
+      },
+      data: data,
+    };
+
+    Axios(config)
+      .then(function (response) {
+        console.log(JSON.stringify(response.data));
+        setShowUSSDCode(true);
+        setTransferUSSDCode(response.data.data.ussd_code);
+        setIsLoading(false);
+        setButtonDisabled(false);
+      })
+      .catch(function (error) {
+        console.log(error);
+        setIsLoading(false);
+        errorHandler(error);
+        setButtonDisabled(false);
+      });
+  };
+  const makeCall = (number) => {
+    Linking.openURL(`tel:${number}`);
+  };
   return (
     <ScrollView style={{backgroundColor: 'white'}}>
       <FocusAwareStatusBar
@@ -391,6 +476,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
             Make payment
           </Text>
         </View>
+        {/* <Text>{expiryDateDispley.substring(3)}</Text> */}
 
         <TouchableOpacity
           activeOpacity={0.9}
@@ -505,7 +591,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
                 isNumeric={true}
                 placeHolder="0000-0000-0000-0000"
                 onChange={handleCardNumber}
-                maxLength={19}
+                maxLength={22}
               />
             </View>
             <View
@@ -561,7 +647,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
           </>
         ) : (
           <>
-            <View style={{padding: '0%', width: '100%', marginTop: '10%'}}>
+            {/* <View style={{padding: '0%', width: '100%', marginTop: '10%'}}>
               <Text style={{fontSize: dimension.fontScale * 13}}>
                 Account Name
               </Text>
@@ -571,17 +657,56 @@ const StudentPaymentScreen = ({route, navigation}) => {
                 placeHolder="Enter account name"
                 onChange={handleAccountName}
               />
-            </View>
+            </View> */}
             <View
               style={{
                 padding: '0%',
-                flexDirection: 'row',
+                flexDirection: 'column',
                 marginVertical: '10%',
                 alignItems: 'center',
                 justifyContent: 'space-between',
               }}>
-              <View style={{width: '45%', backgroundColor: 'transparent'}}>
-                <Text style={{marginVertical: '5%'}}>Bank</Text>
+              {showUSSDCode ? (
+                <View
+                  style={{
+                    padding: '5%',
+                    backgroundColor: 'rgba(0,20,200,0.05)',
+                    width: '100%',
+                  }}>
+                  <Text style={{fontWeight: 'bold', marginTop: '5%'}}>
+                    Almost done!
+                  </Text>
+                  <Text
+                    onPress={() => {
+                      makeCall(transferUSSDCode);
+                    }}
+                    style={{
+                      marginTop: '5%',
+                      fontWeight: 'bold',
+                      color: 'rgba(1,100,200,1)',
+                      fontSize: dimension.fontScale * 20,
+                    }}>
+                    <Text>Dial</Text> ({transferUSSDCode})
+                  </Text>
+                  <Text style={{marginTop: '5%'}}>
+                    Click the code above to copy and dial it on your phone to
+                    complete the process
+                  </Text>
+                  <Text style={{marginTop: '5%'}}>
+                    When the payment is completed via USSD, you will have to
+                    restart your app to access and enjoy your course,{' '}
+                    <Text style={{fontWeight: 'bold', color: 'green'}}>
+                      CHEERS
+                    </Text>
+                  </Text>
+                </View>
+              ) : (
+                <></>
+              )}
+              <View style={{width: '100%', backgroundColor: 'transparent'}}>
+                <Text style={{marginVertical: '1%', marginLeft: '2%'}}>
+                  Bank
+                </Text>
                 <View
                   style={{
                     padding: '2%',
@@ -590,7 +715,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
                   }}>
                   <PickerComponent
                     rounded={true}
-                    itemList={bankList}
+                    itemList={supportedUSSDBanks}
                     selectedValue={bankName}
                     pickerFunction={handleBankName}
                     placeholder={'Select'}
@@ -598,7 +723,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
                 </View>
               </View>
 
-              <View style={{width: '45%', backgroundColor: 'transparent'}}>
+              {/* <View style={{width: '45%', backgroundColor: 'transparent'}}>
                 <Text style={{marginVertical: '5%'}}>Account Number</Text>
                 <View
                   style={{
@@ -617,7 +742,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
                     keyboardType={'numeric'}
                   />
                 </View>
-              </View>
+              </View> */}
 
               {/* <TextInput /> */}
             </View>
@@ -656,14 +781,24 @@ const StudentPaymentScreen = ({route, navigation}) => {
             <></>
           )}
         </TouchableOpacity> */}
-        <ButtonComponent
-          showLoader={isLoading}
-          // onPress={handlePayNowButton}
-          onPress={() => {
-            groupStrings(cardNumberDisplay);
-          }}
-          buttonText={'Pay $' + amount / 500 + ' Now'}
-        />
+        <View
+          style={{
+            width: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <ButtonComponent
+            showLoader={isLoading}
+            isDisabled={buttonDisabled}
+            onPress={
+              activatePayWithTransfer
+                ? handlePayWithUSSDCode
+                : handlePayNowButton
+            }
+            // onPress={handlePayNowButton}
+            buttonText={'Pay $' + amount / 500 + ' Now'}
+          />
+        </View>
       </View>
     </ScrollView>
   );

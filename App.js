@@ -66,6 +66,7 @@ import {brandColor} from './components/modules';
 import ForgotPasswordScreen from './components/forgotPasswordScreen';
 import ChangePasswordScreen from './components/changePasswordScreen';
 import FocusAwareStatusBar from './components/FocuseAwareStatusBar';
+import StudentHomeScreen from './components/studentHomeScreen';
 // import HomeScreenSkeleton from './components/homeScreenSkeleton';
 // import StudentHom
 // import StudentPaymentScreen from './components/studentPaymentScreen';
@@ -82,6 +83,9 @@ const App = () => {
         }}>
         <Stack.Screen name="OnboardingScreen">
           {(props) => <OnBoardingScreen {...props} />}
+        </Stack.Screen>
+        <Stack.Screen name="StudentHomeScreen">
+          {(props) => <StudentHomeScreen {...props} />}
         </Stack.Screen>
         <Stack.Screen name="ForgotPasswordScreen">
           {(props) => <ForgotPasswordScreen {...props} />}

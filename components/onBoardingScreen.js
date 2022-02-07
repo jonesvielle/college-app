@@ -1,24 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  StatusBar,
-  Dimensions,
-  ImageBackground,
-  Image,
-  ActivityIndicator,
-  TouchableOpacity,
-} from 'react-native';
+import {View, Image, ActivityIndicator} from 'react-native';
 import Axios from 'axios';
-import VectorBackground from '../images/vect11.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {storeToken, dimension, deleteToken} from './modules';
+import {dimension, errorHandler} from './modules';
 import Brand from '../images/lot.png';
 import TourScreen from './tourScreen';
-import {color} from 'react-native-reanimated';
 import TutorTabComponent from './tutorTabComponent';
 import StudentDrawerComponent from './studentTabComponent';
 
@@ -144,14 +130,17 @@ const OnBoardingScreen = ({navigation}) => {
         })
         .catch(function (error) {
           // console.log(error.response.data);
+
           if (error.response === undefined) {
             // alert('no network');
             setIsLoaded(true);
             navigation.navigate('NoNetworkScreen');
           } else {
             // alert('handle the error');
+            // errorHandler(error);
             setIsLoaded(true);
-            console.log(error.response.data);
+            console.log('with network', error.response.data);
+            console.log(error);
             setTokenExpired(true);
           }
         });
