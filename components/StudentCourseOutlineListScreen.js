@@ -56,6 +56,7 @@ import RNFetchBlob from 'react-native-fetch-blob';
 import MediaMeta from 'react-native-media-meta';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ButtonComponent from './buttonComponent';
+import FocusAwareStatusBar from './FocuseAwareStatusBar';
 
 const StudentCourseOutlineListScreen = ({route, navigation}) => {
   const {title, courseOutline, numberOfTopics, thumbnail, id} = route.params;
@@ -69,6 +70,7 @@ const StudentCourseOutlineListScreen = ({route, navigation}) => {
   //   const [LectureArray, setLectureArray] = useState([]);
   const [downloadedIndexList, setDownloadedIndexList] = useState([]);
   const [localLecturesStorage, setLocalLecturesStorage] = useState([]);
+  const [seekProgress, setSeekProgress] = useState(0);
 
   let dirs = RNFetchBlob.fs.dirs;
 
@@ -181,8 +183,8 @@ const StudentCourseOutlineListScreen = ({route, navigation}) => {
               localLecturesStorage.concat({
                 date: Date.now(),
                 title,
-                type,
-                file: 'file//' + res.path(),
+                type: 'video',
+                file: res.path(),
               }),
             );
             setUpdateStates({});
@@ -315,17 +317,61 @@ const StudentCourseOutlineListScreen = ({route, navigation}) => {
     return arr;
   };
 
-  const handlePlayVideo = (file) => {
+  const handlePlayVideo = (file, videoTitle) => {
     // alert(file);
     navigation.navigate('CollegeVideoPlayerComponent', {
       thumbnail,
       preview_video: file,
+      videoTitle,
     });
   };
 
+  // start
+  // RNFetchBlob.config({
+  //   // add this option that makes response data to be stored as a file,
+  //   // this is much more performant.
+  //   fileCache: true,
+  // })
+  //   .fetch(
+  //     'GET',
+  //     'https://collageapi.s3.amazonaws.com/videos/131622919_480451316382482_3440657618569564374_n.mp4',
+  //     {
+  //       //some headers ..
+  //     },
+  //   )
+  //   .then((res) => {
+  //     // the temp file path
+  //     console.log('The file saved to ', res.path());
+  //   });
+
+  // const handleDownloadFile = async () => {
+  //   try {
+  //     const granted = await PermissionsAndroid.request(
+  //       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+  //       {
+  //         title: 'Camera permission request',
+  //         message: 'College wants to write to your external storage',
+  //         // buttonNeutral: "Ask Me Later",
+  //         buttonNegative: 'Cancel',
+  //         buttonPositive: 'OK',
+  //       },
+  //     );
+  //     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+  // end
+
   //   console.log('outline', courseOutline[0].classObjectArray);
   return (
-    <ScrollView style={{backgroundColor: 'white'}}>
+    <ScrollView style={{backgroundColor: 'white', height: height}}>
+      <FocusAwareStatusBar
+        currentHeight={0}
+        translucent={false}
+        backgroundColor={brandColor}
+      />
       {/* <Image
         // resizeMethod="scale"
         style={{
@@ -339,14 +385,14 @@ const StudentCourseOutlineListScreen = ({route, navigation}) => {
         }}
         resizeMode="stretch"
       /> */}
-      <View>
+      <View style={{backgroundColor: 'transparent'}}>
         <View>
           <LinearGradient colors={['rgba(0, 0, 0, 0.2)', 'rgba(0, 0, 0, 1)']}>
             <Image
               // resizeMethod="scale"
               style={{
                 width: width,
-                height: height * 0.4,
+                height: height * 0.2,
                 // borderRadius: deviceSize * 0.0003,
                 zIndex: -1,
               }}
@@ -360,82 +406,76 @@ const StudentCourseOutlineListScreen = ({route, navigation}) => {
           <View
             style={{
               width: width,
-              height: height * 0.4,
+              height: height * 0.2,
               // backgroundColor: 'rgba(0, 0, 0, 0.521)',
               position: 'absolute',
               // borderRadius: deviceSize * 0.0003,
-              paddingHorizontal: '10%',
-              justifyContent: 'flex-end',
+              padding: '5%',
+              justifyContent: 'flex-start',
+              flexDirection: 'row',
             }}>
-            <Text
-              style={{
-                color: 'white',
-                marginBottom: '5%',
-                fontWeight: 'bold',
-              }}>
-              {title.toUpperCase()}
-            </Text>
-            <View
-              style={{
-                width: '100%',
-                marginBottom: '10%',
-                flexDirection: 'row',
-              }}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Ionicons
-                  onPress={() => {
-                    // navigation.goBack();
-                    // alert('GGgg');
-                  }}
-                  name="book-outline"
-                  size={18}
-                  color={'white'}
-                />
-                <Text style={{color: 'white'}}>
-                  {' '}
-                  {courseOutline.length} Lectures
-                </Text>
-              </View>
-              {/* <View
+            <View>
+              <Ionicons
+                onPress={() => {
+                  navigation.goBack();
+                  // alert('GGgg');
+                }}
+                name="chevron-back-outline"
+                size={25}
+                color={'white'}
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginLeft: '10%',
-                }}>
-                <Ionicons
-                  onPress={() => {
-                    navigation.goBack();
-                    // alert('GGgg');
-                  }}
-                  name="book-outline"
-                  size={18}
-                  color={'white'}
-                />
-                <Text style={{color: 'white'}}> 12 Topics</Text>
-              </View> */}
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  borderRadius: deviceSize,
+                  padding: '1%',
+                }}
+              />
             </View>
           </View>
         </View>
-        <View style={{padding: '5%'}}>
-          <Text>
-            Download lectures and visit the download page to watch videos
-            offline
+        <View
+          style={{
+            padding: '5%',
+            alignItems: 'center',
+            justifyContent: 'center',
+            // backgroundColor: 'green',
+            // position: 'absolute',
+            width: '100%',
+            // marginTop: height * 0.75,
+            // zIndex: 2,
+          }}>
+          <ButtonComponent
+            buttonText="Go to downloads"
+            onPress={() => {
+              navigation.navigate('StudentDownloadScreen');
+            }}
+          />
+        </View>
+        <View style={{paddingHorizontal: '5%', paddingBottom: '2%'}}>
+          <Text
+            style={{
+              color: '#333333',
+              fontWeight: 'bold',
+              fontSize: dimension.fontScale * 14,
+            }}>
+            {title.toUpperCase()}
           </Text>
         </View>
       </View>
       {courseOutline.map((c, i) => (
-        <View key={i}>
+        <View key={i} style={{backgroundColor: 'transparent'}}>
           <View
             style={{
               paddingVertical: '2%',
-              marginTop: '5%',
+              marginTop: '0%',
               marginHorizontal: '5%',
               paddingHorizontal: '5%',
               flexDirection: 'row',
-              borderWidth: 0.5,
+              // borderWidth: 0.5,
               borderRadius: 10,
-              //   marginBottom: '5%',
+              justifyContent: 'space-between',
+              // marginBottom: '15%',
               // alignItems: 'center',
+              // backgroundColor: 'yellow',
             }}>
             {/* <Text
               style={{
@@ -461,19 +501,35 @@ const StudentCourseOutlineListScreen = ({route, navigation}) => {
               }}
               resizeMode="stretch"
             /> */}
-
-            <View style={{width: '90%'}}>
-              <Text
-                onPress={() => {
-                  handlePlayVideo(c.file);
-                }}
+            <Text
+              style={{
+                color: '#333333',
+                fontSize: dimension.fontScale * 15,
+                fontWeight: 'bold',
+                width: '5%',
+              }}>
+              {i + 1}
+            </Text>
+            <View style={{width: '80%'}}>
+              <View style={{flexDirection: 'row'}}>
+                <Text
+                  onPress={() => {
+                    handlePlayVideo(c.file, c.classTitle);
+                  }}
+                  style={{
+                    fontSize: dimension.fontScale * 15,
+                    fontWeight: 'bold',
+                    color: '#333333',
+                  }}>
+                  {c.classTitle}
+                </Text>
+              </View>
+              <View
                 style={{
-                  fontSize: dimension.fontScale * 15,
-                  fontWeight: 'bold',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginTop: '3%',
                 }}>
-                {c.classTitle.toUpperCase()}
-              </Text>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Ionicons
                   onPress={() => {
                     // navigation.goBack();
@@ -483,9 +539,8 @@ const StudentCourseOutlineListScreen = ({route, navigation}) => {
                   size={18}
                   color={'grey'}
                 />
-                <Text
-                  style={{marginTop: '2%', color: 'grey', marginLeft: '5%'}}>
-                  {c.fileObject.type}
+                <Text style={{color: 'grey', marginLeft: '5%'}}>
+                  {moment.utc(c.videoLength * 1000).format('mm:ss')}
                 </Text>
               </View>
             </View>
@@ -505,11 +560,11 @@ const StudentCourseOutlineListScreen = ({route, navigation}) => {
                 handleDownloadTask(
                   c.file,
                   i,
-                  c.fileObject.type,
+                  'video',
                   c.classTitle.toUpperCase(),
                 );
               }}
-              style={{backgroundColor: 'white'}}>
+              style={{backgroundColor: 'transparent'}}>
               {handleCheckDownloaded(
                 c.classTitle.toUpperCase(),
                 localLecturesStorage,
@@ -578,7 +633,7 @@ const StudentCourseOutlineListScreen = ({route, navigation}) => {
                       //   onPress={handleAccordion}
                       name={'arrow-down-outline'}
                       size={10}
-                      color={brandColor}
+                      color={'grey'}
                       style={{
                         //   width: '10%',
                         fontWeight: 'bold',
@@ -609,14 +664,6 @@ const StudentCourseOutlineListScreen = ({route, navigation}) => {
           ))} */}
         </View>
       ))}
-      <View style={{padding: '5%'}}>
-        <ButtonComponent
-          buttonText="Go to downloads"
-          onPress={() => {
-            navigation.navigate('StudentDownloadScreen');
-          }}
-        />
-      </View>
     </ScrollView>
   );
 };

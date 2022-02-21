@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {View, Image, ActivityIndicator} from 'react-native';
 import Axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {dimension, errorHandler} from './modules';
+import {apiDomain, dimension, errorHandler} from './modules';
 import Brand from '../images/lot.png';
 import TourScreen from './tourScreen';
 import TutorTabComponent from './tutorTabComponent';
@@ -31,6 +31,7 @@ const OnBoardingScreen = ({navigation}) => {
   const [studentId, setStudentId] = useState('');
   const [lectureAmount, setLectureAmount] = useState('');
   const [pastQuestionAmount, setPastQuestionAmount] = useState('');
+  const [storedStudentId, setStoredStudentId] = useState('');
 
   // const deleteDownloads = async () => {
   //   try {
@@ -78,7 +79,26 @@ const OnBoardingScreen = ({navigation}) => {
         console.log('error', error);
       }
     };
+
+    const retrieveId = async () => {
+      try {
+        const value = await AsyncStorage.getItem('@student_id');
+        console.log(value);
+        if (value !== null) {
+          // console.log(value);
+          // setState(value);
+          setStoredStudentId(value);
+          return value;
+        } else {
+          return null;
+        }
+      } catch (error) {
+        console.log('error', error);
+      }
+    };
+
     retrieveToken();
+    retrieveId();
     console.log('ttk', authenticationToken);
     if (authenticationToken === null || authenticationToken === '') {
       setUserExist(false);
@@ -89,11 +109,12 @@ const OnBoardingScreen = ({navigation}) => {
       // authentication request
       var data = JSON.stringify({
         token: authenticationToken,
+        student_id: storedStudentId,
       });
 
       var config = {
         method: 'post',
-        url: 'http://collageapi.herokuapp.com/api/authenticate/',
+        url: apiDomain + '/api/authenticate/',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -130,7 +151,7 @@ const OnBoardingScreen = ({navigation}) => {
         })
         .catch(function (error) {
           // console.log(error.response.data);
-
+          errorHandler(error);
           if (error.response === undefined) {
             // alert('no network');
             setIsLoaded(true);

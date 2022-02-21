@@ -47,6 +47,8 @@ import Slider from '@react-native-community/slider';
 import Orientation from 'react-native-orientation-locker';
 import LinearGradient from 'react-native-linear-gradient';
 import {useNavigation} from '@react-navigation/core';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import FocusAwareStatusBar from './FocuseAwareStatusBar';
 
 const StudentLectureAccessCourseOutlineScreen = ({
   courseOutline,
@@ -55,6 +57,9 @@ const StudentLectureAccessCourseOutlineScreen = ({
   thumbnail,
 }) => {
   //   const [courseOutline, setCourseOutline] = useState([]);
+  const [allKeys, setAllKeys] = useState([]);
+  const [lecturesProgress, setLecturesProgress] = useState([]);
+  const [currentLectureProgress, setCurrentLectureProgress] = useState([]);
 
   const navigation = useNavigation();
 
@@ -67,52 +72,157 @@ const StudentLectureAccessCourseOutlineScreen = ({
       id,
     });
   };
+  const getLecturesProgress = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('@lecturesProgress');
+      if (jsonValue != null) {
+        const data = JSON.parse(jsonValue);
+        setLecturesProgress(data);
+        console.log('lectures progress', data);
+        let tempArray = new Array();
+        for (i in data) {
+          if (data[i].courseTitle === title) {
+            tempArray.push(data[i]);
+          }
+        }
+        setCurrentLectureProgress(tempArray);
+      }
+    } catch (e) {
+      console.log('error from reading lecture progress', e);
+    }
+  };
+
+  const checkIfLectureIsStarted = (topicTitle) => {
+    for (i in currentLectureProgress) {
+      console.log('lopp', currentLectureProgress[i]);
+      if (currentLectureProgress[i].topicTitle === topicTitle) {
+        return currentLectureProgress[i];
+      } else {
+        return false;
+      }
+    }
+  };
+
+  const getAllKeys = async () => {
+    let keys = [];
+    try {
+      keys = await AsyncStorage.getAllKeys();
+    } catch (e) {
+      console.log('read key error', e);
+    }
+    setAllKeys(keys);
+  };
+
+  const setLectureProgressKey = async () => {
+    try {
+      const jsonValue = JSON.stringify([]);
+      await AsyncStorage.setItem('@lecturesProgress', jsonValue);
+    } catch (e) {
+      console.log('saving error', e);
+    }
+  };
+
+  const addLectureProgressObject = (courseTitle, topicTitle) => {
+    progressObject = {
+      courseTitle,
+      topicTitle,
+      progress: 0,
+    };
+  };
+
+  useEffect(() => {
+    // console.log(checkLectureProgressExists());
+    getAllKeys();
+    if (allKeys.includes('@lecturesProgress')) {
+      getLecturesProgress();
+    } else {
+      setLectureProgressKey();
+    }
+  }, []);
 
   return (
     <View style={{padding: '5%', backgroundColor: 'white'}}>
       {courseOutline.map((c, i) => (
-        <View
-          key={i}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginBottom: '5%',
-          }}>
-          <Image
-            // resizeMethod="scale"
+        <>
+          <View
+            key={i}
             style={{
-              width: width * 0.2,
-              height: width * 0.2,
-              borderRadius: 100,
-              // borderRadius: deviceSize * 0.0003,
-            }}
-            source={{
-              uri: thumbnail,
-            }}
-            resizeMode="stretch"
-          />
-          <View style={{width: '70%', marginLeft: '5%'}}>
-            <Text>
-              <Text style={{fontWeight: 'bold'}}>Topic {i + 1}:</Text>{' '}
-              {c.courseTitle}
-            </Text>
-            <Text
-              onPress={() => {
-                handleAccessCourseOutline(
-                  i + 1,
-                  c.classObjectArray,
-                  c.courseTitle,
-                );
-              }}
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              marginBottom: '5%',
+            }}>
+            <Image
+              // resizeMethod="scale"
               style={{
-                color: brandColor,
-                fontWeight: 'bold',
-                marginVertical: '2%',
-              }}>
-              Start class
-            </Text>
+                width: width * 0.2,
+                height: width * 0.2,
+                borderRadius: 10,
+                // borderRadius: deviceSize * 0.0003,
+              }}
+              source={{
+                uri: thumbnail,
+              }}
+              resizeMode="stretch"
+            />
+            <View style={{width: '70%', marginLeft: '5%'}}>
+              <Text style={{fontFamily: 'DM Sans', color: '#333333'}}>
+                <Text style={{fontWeight: 'bold', fontFamily: 'DM Sans'}}>
+                  Topic {i + 1}:
+                </Text>{' '}
+                {c.title}
+              </Text>
+              {!checkIfLectureIsStarted(c.title) ? (
+                <>
+                  {console.log(
+                    'checked here',
+                    checkIfLectureIsStarted(c.title),
+                  )}
+                </>
+              ) : (
+                <Progress.Bar
+                  progress={checkIfLectureIsStarted(c.title).progress}
+                  width={200}
+                  color={brandColor}
+                  style={{marginTop: '5%'}}
+                  unfilledColor={'#F2F2F2'}
+                  borderWidth={0}
+                />
+              )}
+              {!checkIfLectureIsStarted(c.title) ? (
+                <Text
+                  onPress={() => {
+                    handleAccessCourseOutline(i + 1, c.class, c.title);
+                  }}
+                  style={{
+                    color: brandColor,
+                    fontWeight: 'bold',
+                    marginVertical: '2%',
+                  }}>
+                  Start class
+                </Text>
+              ) : (
+                <Text
+                  onPress={() => {
+                    handleAccessCourseOutline(i + 1, c.class, c.title);
+                  }}
+                  style={{
+                    color: brandColor,
+                    fontWeight: 'bold',
+                    marginVertical: '2%',
+                  }}>
+                  Resume class
+                </Text>
+              )}
+            </View>
           </View>
-        </View>
+          <View
+            style={{
+              height: 1.5,
+              backgroundColor: '#E0E0E0',
+              width: '100%',
+              marginBottom: '5%',
+            }}></View>
+        </>
       ))}
 
       {/* <View
@@ -149,6 +259,9 @@ const StudentLectureAccessCourseOutlineScreen = ({
           </Text>
         </View>
       </View> */}
+      <View style={{marginTop: height * 0.1, alignItems: 'center'}}>
+        <Text style={{color: 'grey'}}>Nothing more</Text>
+      </View>
     </View>
   );
 };

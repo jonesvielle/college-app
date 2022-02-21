@@ -26,6 +26,7 @@ import {
   awsOptions,
   dimension,
   titleCase,
+  apiDomain,
 } from './modules';
 import Moment from 'moment';
 import Video from 'react-native-video';
@@ -72,7 +73,8 @@ const StudentUploadQuestionsComponent = ({
     var config = {
       method: 'get',
       url:
-        'http://collageapi.herokuapp.com/api/get_anwsers/' +
+        apiDomain +
+        '/api/get_anwsers/' +
         lecture_id +
         '/' +
         authenticationToken +
@@ -92,84 +94,85 @@ const StudentUploadQuestionsComponent = ({
       });
   };
 
-  // const handleUploadFileToS3 = (f) => {
-  //   console.warn(f);
-  //   const awsParams = awsOptions();
-  //   RNS3.put(f, awsParams)
-  //     .progress((e) => {
-  //       setIsUploading(true);
-  //       // console.log(e.loaded / e.total);
-  //       console.log(Math.round((e.loaded * 100) / e.total));
-  //     })
-  //     .then((response) => {
-  //       console.log('result', response);
-  //       setIsUploading(false);
-  //       questionState(response.body.postResponse.location);
-  //       sendData(response.body.postResponse.location, f.name);
-  //       getData();
-  //       console.log(response.body.postResponse.location);
-  //     })
-  //     .catch((e) => {
-  //       setIsUploading(false);
-  //       console.warn(e);
-  //       alert('something went wrong');
-  //     });
-  // };
+  const handleUploadFileToS3 = (f) => {
+    console.warn(f);
+    const awsParams = awsOptions();
+    RNS3.put(f, awsParams)
+      .progress((e) => {
+        setIsUploading(true);
+        // console.log(e.loaded / e.total);
+        console.log(Math.round((e.loaded * 100) / e.total));
+      })
+      .then((response) => {
+        console.log('result', response);
 
-  // const sendData = (qst, title) => {
-  //   var data = JSON.stringify({
-  //     token: authenticationToken,
-  //     lecture_id: lecture_id,
-  //     university: studentUniversity,
-  //     question: qst,
-  //     title: title,
-  //     tutor_id: tutorId,
-  //   });
+        questionState(response.body.postResponse.location);
+        sendData(response.body.postResponse.location, f.name);
+        getData();
+        console.log(response.body.postResponse.location);
+      })
+      .catch((e) => {
+        setIsUploading(false);
+        console.warn(e);
+        alert('something went wrong');
+      });
+  };
 
-  //   var config = {
-  //     method: 'post',
-  //     url: 'https://collageapi.herokuapp.com/api/ask_tutor/',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //     },
-  //     data: data,
-  //   };
+  const sendData = (qst, title) => {
+    var data = JSON.stringify({
+      token: authenticationToken,
+      lecture_id: lecture_id,
+      university: studentUniversity,
+      question: qst,
+      title: title,
+      tutor_id: tutorId,
+    });
 
-  //   Axios(config)
-  //     .then(function (response) {
-  //       console.log(JSON.stringify(response.data));
-  //     })
-  //     .catch(function (error) {
-  //       console.log(error);
-  //     });
-  // };
+    var config = {
+      method: 'post',
+      url: apiDomain + '/api/ask_tutor/',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: data,
+    };
 
-  // const handleUploadFile = async () => {
-  //   try {
-  //     const res = await DocumentPicker.pick({
-  //       type: [DocumentPicker.types.images],
-  //     });
-  //     console.log(res);
-  //     const fileObj = {
-  //       type: res.type,
-  //       name: res.name,
-  //       uri: res.uri,
-  //     };
-  //     setFileType(fileObj.type);
-  //     // const awsParams = awsOptions(fileType);
-  //     setFileObject(fileObj);
+    Axios(config)
+      .then(function (response) {
+        setIsUploading(false);
+        console.log(JSON.stringify(response.data));
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
 
-  //     setUpdateStates({});
-  //     // console.warn(awsParams);
-  //     handleUploadFileToS3(fileObj);
-  //   } catch (error) {
-  //     if (DocumentPicker.isCancel(error)) {
-  //       console.warn('cancelled');
-  //     } else {
-  //       throw error;
-  //     }
-  //   }
-  // };
+  const handleUploadFile = async () => {
+    try {
+      const res = await DocumentPicker.pick({
+        type: [DocumentPicker.types.images],
+      });
+      console.log(res);
+      const fileObj = {
+        type: res.type,
+        name: res.name,
+        uri: res.uri,
+      };
+      setFileType(fileObj.type);
+      // const awsParams = awsOptions(fileType);
+      setFileObject(fileObj);
+
+      setUpdateStates({});
+      // console.warn(awsParams);
+      handleUploadFileToS3(fileObj);
+    } catch (error) {
+      if (DocumentPicker.isCancel(error)) {
+        console.warn('cancelled');
+      } else {
+        throw error;
+      }
+    }
+  };
 
   useEffect(() => {
     getData();

@@ -75,6 +75,7 @@ const StudentLectureDetailsScreen = ({route, navigation}) => {
   const [showControl, setShowControl] = useState(true);
   const [accordionHeight, setAccordionHeight] = useState(0);
   const [activeAccordion, setActiveAccordion] = useState(0);
+  const [ratings, setRatings] = useState([]);
   const handlePlayVideo = () => {
     navigation.navigate('CollegeVideoPlayerComponent', {
       preview_video,
@@ -149,6 +150,46 @@ const StudentLectureDetailsScreen = ({route, navigation}) => {
     }
     setActiveAccordion(index);
   };
+
+  const getRatings = () => {
+    var data = JSON.stringify({
+      lecture_id: id,
+    });
+
+    var config = {
+      method: 'post',
+      url: apiDomain + '/api/get_ratings/',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      data: data,
+    };
+
+    Axios(config)
+      .then(function (response) {
+        console.log(JSON.stringify(response.data));
+        setRatings(response.data.message);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
+
+  const getStars = (length) => {
+    let arr = new Array(length);
+    [7, 7].map((c, i) => (
+      <Ionicons
+        key={i}
+        name="star"
+        size={deviceSize * 0.00006}
+        color={'#FCAA11'}
+      />
+    ));
+  };
+
+  useEffect(() => {
+    getRatings();
+  }, []);
   return (
     <View style={{backgroundColor: 'white', paddingBottom: '10%'}}>
       <FocusAwareStatusBar
@@ -524,107 +565,47 @@ const StudentLectureDetailsScreen = ({route, navigation}) => {
             }}>
             Students Ratings
           </Text>
-          <View style={{marginTop: '5%'}}>
-            <Text>
-              This is a dog vourese, i hate ut wth passion and get it out of my
-              pkaxe, please keep it uo
-            </Text>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                // backgroundColor: 'red',
-              }}>
-              <Text style={{marginTop: '5%', color: 'grey'}}>John Thomas</Text>
+          {ratings.map((c, i) => (
+            <View style={{marginTop: '5%'}} key={i}>
+              <Text>{c.comment}</Text>
               <View
                 style={{
-                  alignItems: 'center',
                   flexDirection: 'row',
-                  // backgroundColor: 'green',
-                  marginTop: '5%',
-                  marginLeft: '5%',
+                  alignItems: 'center',
+                  // backgroundColor: 'red',
                 }}>
-                <Ionicons
-                  name="star"
-                  size={deviceSize * 0.00006}
-                  color={'#FCAA11'}
-                />
-                <Ionicons
-                  name="star"
-                  size={deviceSize * 0.00006}
-                  color={'#FCAA11'}
-                />
-                <Ionicons
-                  name="star"
-                  size={deviceSize * 0.00006}
-                  color={'#FCAA11'}
-                />
-                <Ionicons
-                  name="star"
-                  size={deviceSize * 0.00006}
-                  color={'#FCAA11'}
-                />
+                <Text style={{marginTop: '5%', color: 'grey'}}>
+                  {c.student_name}
+                </Text>
+                <View
+                  style={{
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    // backgroundColor: 'green',
+                    marginTop: '5%',
+                    marginLeft: '5%',
+                  }}>
+                  {/* {const arr = new Array(7)} */}
+                  {new Array(c.rate).fill(0).map((c, i) => (
+                    <Ionicons
+                      key={i}
+                      name="star"
+                      size={deviceSize * 0.00006}
+                      color={'#FCAA11'}
+                    />
+                  ))}
+                  {/* {getStars(3)} */}
+                </View>
               </View>
-            </View>
 
-            <View
-              style={{
-                height: height * 0.001,
-                backgroundColor: 'grey',
-                marginTop: '5%',
-              }}></View>
-          </View>
-
-          <View style={{marginTop: '5%'}}>
-            <Text>
-              This is a dog vourese, i hate ut wth passion and get it out of my
-              pkaxe, please keep it uo
-            </Text>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                // backgroundColor: 'red',
-              }}>
-              <Text style={{marginTop: '5%', color: 'grey'}}>John Thomas</Text>
               <View
                 style={{
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  // backgroundColor: 'green',
+                  height: height * 0.001,
+                  backgroundColor: 'grey',
                   marginTop: '5%',
-                  marginLeft: '5%',
-                }}>
-                <Ionicons
-                  name="star"
-                  size={deviceSize * 0.00006}
-                  color={'#FCAA11'}
-                />
-                <Ionicons
-                  name="star"
-                  size={deviceSize * 0.00006}
-                  color={'#FCAA11'}
-                />
-                <Ionicons
-                  name="star"
-                  size={deviceSize * 0.00006}
-                  color={'#FCAA11'}
-                />
-                <Ionicons
-                  name="star"
-                  size={deviceSize * 0.00006}
-                  color={'#FCAA11'}
-                />
-              </View>
+                }}></View>
             </View>
-
-            {/* <View
-              style={{
-                height: height * 0.001,
-                backgroundColor: 'grey',
-                marginTop: '5%',
-              }}></View> */}
-          </View>
+          ))}
         </View>
       </ScrollView>
       {/* <View style={{marginBottom: '30%'}}></View> */}

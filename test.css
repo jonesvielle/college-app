@@ -4,33 +4,189 @@ https: //dev.to/lloyds-digital/let-s-create-a-carousel-in-react-native-4ae2;
 }
 rgba(252, 184, 195, 0.2)
 
-
-
-{c.class.map((j, i) => (
+{courseOutline.map((c, i) => (
+  <View key={i}>
     <View
-      key={i}
       style={{
+        paddingVertical: '2%',
+        marginTop: '5%',
+        marginHorizontal: '5%',
+        paddingHorizontal: '5%',
         flexDirection: 'row',
-        marginTop: '2%',
-        marginLeft: '0%',
-        //   justifyContent: 'space-between',
+        borderWidth: 0.5,
+        borderRadius: 10,
+        //   marginBottom: '5%',
+        // alignItems: 'center',
       }}>
-      <View style={{width: '80%'}}>
+      {/* <Text
+        style={{
+          width: '10%',
+          // fontWeight: 'bold',
+          fontSize: dimension.fontScale * 15,
+        }}>
+        {i + 1}
+      </Text> */}
+      {/* <Image
+        paused={true}
+        // resizeMethod="scale"
+        style={{
+          width: '20%',
+          height: width * 0.2,
+          marginRight: '5%',
+          borderRadius: 50,
+          // borderRadius: deviceSize * 0.0003,
+          // zIndex: -1,
+        }}
+        source={{
+          uri: c.file,
+        }}
+        resizeMode="stretch"
+      /> */}
+
+      <View style={{width: '90%'}}>
         <Text
+          onPress={() => {
+            handlePlayVideo(c.file);
+          }}
           style={{
-            fontSize: dimension.fontScale * 13,
-            color: 'grey',
+            fontSize: dimension.fontScale * 15,
+            fontWeight: 'bold',
           }}>
-          {j.classTitle}
-          {'gg '}
+          {c.title.toUpperCase()}
         </Text>
-        {/* <Text
-          style={{
-            fontSize: dimension.fontScale * 13,
-            color: 'grey',
-          }}>
-          {'3:00'}
-        </Text> */}
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Ionicons
+            onPress={() => {
+              // navigation.goBack();
+              // alert('GGgg');
+            }}
+            name="folder-open"
+            size={18}
+            color={'grey'}
+          />
+          {/* <Text
+            style={{marginTop: '2%', color: 'grey', marginLeft: '5%'}}>
+            {c.fileObject.type}
+          </Text> */}
+        </View>
       </View>
+
+      <TouchableOpacity
+        disabled={
+          isDownloading ||
+          handleCheckDownloaded(
+            c.title.toUpperCase(),
+            localLecturesStorage,
+          )
+            ? true
+            : false
+        }
+        activeOpacity={0.9}
+        onPress={() => {
+          handleDownloadTask(
+            c.file,
+            i,
+            c.fileObject.type,
+            c.title.toUpperCase(),
+          );
+        }}
+        style={{backgroundColor: 'white'}}>
+        {handleCheckDownloaded(
+          c.title.toUpperCase(),
+          localLecturesStorage,
+        ) ? (
+          <Ionicons
+            onPress={() => {
+              removeFromLocalStorage(c.classTitle.toUpperCase());
+            }}
+            name={'trash-outline'}
+            // size={500}
+            color={'grey'}
+            style={{
+              //   width: '10%',
+              fontWeight: 'bold',
+              fontSize: dimension.fontScale * 30,
+              //   marginLeft: '2%',
+            }}
+          />
+        ) : (
+          <ProgressCircle
+            containerStyle={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: 0,
+            }}
+            outerCircleStyle={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: 0,
+            }}
+            percent={activeListState === i ? downloadProgress * 100 : 0}
+            radius={15}
+            borderWidth={2}
+            color={brandColor}
+            //   shadowColor="#999"
+            bgColor="white">
+            {/* {console.log(checkDownloadingIndexList(9))} */}
+            {activeListState === i && isDownloading ? (
+              <Ionicons
+                //   onPress={handleAccordion}
+                name={'pause-outline'}
+                size={10}
+                color={brandColor}
+                style={{
+                  //   width: '10%',
+                  fontWeight: 'bold',
+                  fontSize: dimension.fontScale * 17,
+                  //   marginLeft: '2%',
+                }}
+              />
+            ) : activeListState === i && isDownloaded ? (
+              <Ionicons
+                //   onPress={handleAccordion}
+                name={'checkmark-outline'}
+                size={10}
+                color={brandColor}
+                style={{
+                  //   width: '10%',
+                  fontWeight: 'bold',
+                  fontSize: dimension.fontScale * 17,
+                  //   marginLeft: '2%',
+                }}
+              />
+            ) : (
+              <Ionicons
+                //   onPress={handleAccordion}
+                name={'arrow-down-outline'}
+                size={10}
+                color={brandColor}
+                style={{
+                  //   width: '10%',
+                  fontWeight: 'bold',
+                  fontSize: dimension.fontScale * 17,
+                  //   marginLeft: '2%',
+                }}
+              />
+            )}
+            {/* <Text>ggg</Text> */}
+          </ProgressCircle>
+        )}
+      </TouchableOpacity>
     </View>
-  ))}
+    {/* {c.classObjectArray.map((j, k) => (
+      <View
+        //   key={i}
+        style={{
+          display: heightState === i ? 'flex' : 'none',
+          // backgroundColor: 'red',
+          marginHorizontal: '15%',
+          marginTop: '2%',
+          flexDirection: 'row',
+          // width: '100%',
+        }}>
+        <Text style={{color: 'black', width: '10%'}}>{k + 1}</Text>
+        <Text style={{color: 'black', width: '90%'}}>{j.classTitle}</Text>
+      </View>
+    ))} */}
+  </View>
+))}

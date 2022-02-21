@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   useWindowDimensions,
   StyleSheet,
+  StatusBar,
+  BackHandler,
   // ScrollView,
 } from 'react-native';
 import TutorHeaderComponent from './tutorHeaderComponent';
@@ -45,9 +47,10 @@ import moment from 'moment';
 import Slider from '@react-native-community/slider';
 // import { Orientation } from 'react-native-pager-view';
 import Orientation from 'react-native-orientation-locker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CollegeVideoPlayerComponent = ({route, navigation}) => {
-  const {thumbnail, preview_video} = route.params;
+  const {thumbnail, preview_video, videoTitle} = route.params;
   const [videoPausedState, setVideoPausedState] = useState(false);
   const [videoDuration, setVideoDuration] = useState(0);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
@@ -68,6 +71,23 @@ const CollegeVideoPlayerComponent = ({route, navigation}) => {
       setShowControl(false);
     }, 3000);
   }, []);
+  // const stor
+  const handleBackButton = BackHandler.addEventListener(
+    'hardwareBackPress',
+    () => {
+      const storeProgress = async (object) => {
+        try {
+          await AsyncStorage.setItem(
+            '@lectures',
+            JSON.stringify(newLocalStorage),
+          );
+        } catch (error) {
+          // Error saving data
+        }
+      };
+      storeProgress();
+    },
+  );
   const handleShowFullScreen = () => {
     if (showFullSceen) {
       setShowControl(false);
@@ -126,6 +146,8 @@ const CollegeVideoPlayerComponent = ({route, navigation}) => {
             alignItems: 'center',
             transform: [{rotate: '-90deg'}],
           }}>
+          <StatusBar backgroundColor={'black'} />
+
           <View>
             <TouchableOpacity
               activeOpacity={1}
@@ -148,8 +170,11 @@ const CollegeVideoPlayerComponent = ({route, navigation}) => {
                 // controls={true}
                 // fullscreen={true}
                 onProgress={(e) => {
-                  //   console.log(e);
+                  console.log(e);
                   setVideoCurrentTime(e.currentTime);
+                }}
+                onSeek={(e) => {
+                  console.log(e);
                 }}
                 onLoad={(e) => {
                   // console.log(e);
@@ -201,12 +226,46 @@ const CollegeVideoPlayerComponent = ({route, navigation}) => {
                   height: '100%',
                   // flexDirection: 'row',
                 }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    width: '70%',
+                    marginTop: '1%',
+                  }}>
+                  <Text
+                    style={{color: 'white', fontWeight: 'bold', width: '80%'}}>
+                    {videoTitle.toUpperCase()}
+                  </Text>
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    style={{
+                      width: '20%',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Ionicons
+                      name="add-circle-outline"
+                      size={dimension.fontScale * 15}
+                      color={'rgba(255, 255, 255, 1)'}
+                    />
+                    <Text
+                      style={{
+                        fontSize: dimension.fontScale * 12,
+                        color: 'white',
+                      }}>
+                      Add notes
+                    </Text>
+                  </TouchableOpacity>
+                </View>
                 <TouchableOpacity
                   //   onPress={handleShowControl}
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
                     marginTop: '20%',
+                    // backgroundColor: 'red',
                   }}>
                   <Ionicons
                     onPress={() => {
@@ -225,6 +284,7 @@ const CollegeVideoPlayerComponent = ({route, navigation}) => {
                       borderRadius: deviceSize,
                       justifyContent: 'center',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       marginHorizontal: '10%',
                     }}>
                     {/* <View
@@ -240,7 +300,7 @@ const CollegeVideoPlayerComponent = ({route, navigation}) => {
                     <Ionicons
                       onPress={handlePlay}
                       name={videoPausedState ? 'play-circle' : 'pause-circle'}
-                      size={deviceSize * 0.00024}
+                      size={50}
                       color={'rgba(255, 255, 255, 1)'}
                     />
 
@@ -274,7 +334,7 @@ const CollegeVideoPlayerComponent = ({route, navigation}) => {
                     {convertSecondsToTime(Math.floor(videoCurrentTime)).minute}:
                     {convertSecondsToTime(Math.floor(videoCurrentTime)).seconds}
                   </Text>
-                  <View style={{width: '85%'}}>
+                  <View style={{width: '80%'}}>
                     {/* <Progress.Bar
                       progress={
                         videoDuration === 0 ? 0 : videoCurrentTime / videoDuration

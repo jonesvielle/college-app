@@ -179,7 +179,7 @@ const StudentPaymentScreen = ({route, navigation}) => {
       formattedText = formattedText.match(new RegExp('.{1,4}', 'g')).join(' ');
     }
     setCardNumberDisplay(formattedText);
-    if (e.length > 19) {
+    if (e.length > 22) {
       expiryDateTextInputRef.current.focus();
     }
     let tempString = new Array();

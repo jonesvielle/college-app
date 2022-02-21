@@ -52,11 +52,46 @@ import StudentLectureAccessDownloadsScreen from './studentLectureAccessDownloads
 import StudentUploadQuestionsComponent from './studentUploadQuestionsComponent';
 import DocumentPicker from 'react-native-document-picker';
 import {RNS3} from 'react-native-aws3';
+import ButtonComponent from './buttonComponent';
+import TextInputComponent from './TextInputComponent';
 
 const StudentLectureAccessNoteScreen = () => {
   return (
-    <View>
-      <Text>Notes</Text>
+    <View style={{padding: '5%', backgroundColor: 'white'}}>
+      {/* <View
+        style={{
+          justifyContent: 'center',
+          alignItems: 'flex-end',
+          flexDirection: 'row',
+          width: '100%',
+        }}>
+        <View
+          style={{
+            width: '80%',
+            justifyContent: 'center',
+            alignItems: 'center',
+            // backgroundColor: 'blue',
+          }}>
+          <TextInputComponent
+            multiline={true}
+            placeHolder={'Add notes here...'}
+          />
+        </View>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={{
+            backgroundColor: brandColor,
+            borderTopRightRadius: 10,
+            borderBottomRightRadius: 10,
+            padding: '3.5%',
+          }}>
+          <Ionicons
+            name="add"
+            size={dimension.fontScale * 30}
+            color={'white'}
+          />
+        </TouchableOpacity>
+      </View> */}
     </View>
   );
 };

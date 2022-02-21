@@ -26,6 +26,7 @@ import {
   dimension,
   titleCase,
   errorHandler,
+  apiDomain,
 } from './modules';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import {Picker} from '@react-native-picker/picker';
@@ -89,7 +90,7 @@ const StudentLectureCarouselCard = ({
 
     var config = {
       method: 'post',
-      url: 'https://collageapi.herokuapp.com/api/check_lecture_subscription/',
+      url: apiDomain + '/api/check_lecture_subscription/',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -101,12 +102,12 @@ const StudentLectureCarouselCard = ({
         console.log(JSON.stringify(response.data.message));
         setShowModal(false);
         // handleSubscribe();
-        // navigation.navigate('StudentLectureAccessScreen', {
-        //   lecture_id: id,
-        //   tutorId,
-        //   authenticationToken,
-        //   studentUniversity,
-        // });
+        navigation.navigate('StudentLectureAccessScreen', {
+          lecture_id: id,
+          tutorId,
+          authenticationToken,
+          studentUniversity,
+        });
       })
       .catch(function (error) {
         setShowModal(false);

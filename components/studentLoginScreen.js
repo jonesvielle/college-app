@@ -126,6 +126,16 @@ const StudentLoginScreen = ({route, navigation}) => {
           }
         };
         storeToken();
+        const storeId = async () => {
+          try {
+            await AsyncStorage.setItem('@student_id', response.data.id);
+            // navigation.navigate('OnboardingScreen');
+            RNRestart.Restart();
+          } catch (error) {
+            console.log(error);
+          }
+        };
+        storeId();
       })
       .catch(function (error) {
         console.log(error);
